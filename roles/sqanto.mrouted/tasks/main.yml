@@ -1,0 +1,48 @@
+
+---
+
+- name: "presetup for compile"
+  apt: name="{{ item  }}" update_cache=yes
+  with_items:
+    - make
+    - unzip
+    - bison
+
+- name: "Folder for Download"
+  file:
+    path: "{{mrouted_download_path}}"
+    state: directory
+    mode: "0755"
+
+- name: "Download Source of mrouted"
+  get_url:
+    url: "{{mrouted_download_url}}"
+    dest: "{{mrouted_download_path}}"
+    mode: "0755"
+  register: mrouted_source
+
+- name: "Extract mrouted"
+  unarchive:
+    src: "{{mrouted_source.dest}}"
+    dest: "{{mrouted_download_path}}"
+    remote_src: yes
+  when: mrouted_source.changed
+  register: mrouted_souce_unpack
+
+- name: "Installing mrouted"
+  become: yes
+  shell: ./configure --enable-rsrr && make && make install && make clean install
+  args:
+    chdir: "{{ mrouted_download_path }}/mrouted-{{mrouted_version}}"
+  when: mrouted_souce_unpack|changed
+  register: mrouted_install
+
+- name: "Check if mrouted is running"
+  shell: ps -aux  | grep mrouted | wc -l
+  register: service_mrouted_status
+
+- name: "Start mrouted"
+  become: yes
+  shell: mrouted
+  when: service_mrouted_status.stdout == 1
+

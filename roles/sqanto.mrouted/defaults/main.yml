@@ -1,0 +1,5 @@
+---
+
+mrouted_version: "3.9.8"
+mrouted_download_url: "ftp://ftp.troglobit.com/mrouted/mrouted-3.9.8.tar.bz2"
+mrouted_download_path: "/tmp/mrouted-{{mrouted_version}}"
